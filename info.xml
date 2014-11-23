@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<extension key="com.pogstone.contenttokens" type="module">
+  <file>contenttokens</file>
+  <name>Content Tokens</name>
+  <description>Provide mail merge tokens that list various content, ie Drupal nodes</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Sarah Gladstone at Pogstone Inc.</author>
+    <email>info@pogstone.com</email>
+  </maintainer>
+  <releaseDate>2014-11-22</releaseDate>
+  <version>1.3</version>
+  <develStage>beta</develStage>
+  <compatibility>
+    <ver>4.4</ver>
+  </compatibility>
+  <comments>This extension checks if its running under Drupal before attempting to do Drupal-specific things. It has been tested with Drupal 6 and 7. Its safe to install under Joomla, WordPress, and stand-alone. However no useful functionality is provided for WordPress, Joomla or stand-alone. </comments>
+  <civix>
+    <namespace>CRM/Contenttokens</namespace>
+  </civix>
+</extension>
