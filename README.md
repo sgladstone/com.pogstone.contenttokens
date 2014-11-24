@@ -14,3 +14,5 @@ The content types listed are determined based on content types in your database 
 This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal 6 or 7.
 
 This extension has been tested with Drupal 6 and Drupal 7. 
+
+Installation Note: If your Drupal tables are in a different database than your CiviCRM tables then you will need to verify that the CiviCRM database user has permission to query tables in the Drupal database.
