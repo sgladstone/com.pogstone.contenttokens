@@ -9,7 +9,7 @@
     <email>info@pogstone.com</email>
   </maintainer>
   <releaseDate>2014-11-22</releaseDate>
-  <version>1.5</version>
+  <version>1.6</version>
   <develStage>beta</develStage>
   <urls>
 <url>http://pogstone.com</url>
@@ -18,7 +18,7 @@
     <ver>4.4</ver>
     <ver>4.5</ver>
   </compatibility>
-  <comments>This extension checks if its running under Drupal before attempting to do Drupal-specific things. It has been tested with Drupal 6 and 7. Its safe to install under Joomla, WordPress, and stand-alone. However no useful functionality is provided for WordPress, Joomla or stand-alone. </comments>
+  <comments>This extension checks which CMS its running under before attempting to do CMS-specific things. It has been tested with Drupal 6 and 7. It should work under WordPress, but testing has been limited. Its safe to install under any CMS or stand-alone. However no useful functionality is provided for Joomla or stand-alone. </comments>
   <civix>
     <namespace>CRM/Contenttokens</namespace>
   </civix>
