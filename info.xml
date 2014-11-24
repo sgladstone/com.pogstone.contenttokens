@@ -11,6 +11,9 @@
   <releaseDate>2014-11-22</releaseDate>
   <version>1.4</version>
   <develStage>beta</develStage>
+  <urls>
+<url>http://pogstone.com</url>
+</urls>
   <compatibility>
     <ver>4.4</ver>
     <ver>4.5</ver>
