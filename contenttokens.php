@@ -185,20 +185,27 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	  }else if($config->userSystem->is_joomla ){
   		     	  
   		     	  }
+  		     	  
+  		     	  $full_url =  $url_beginning.$url_alias; 
   		     	 
   		     	 // Change any relative paths to absolute paths. 
   		     	$content_ready_to_use =  str_ireplace( "src='/" , "src='".$url_beginning , $content_teaser ); 
   		     	$content_ready_to_use =  str_ireplace( 'src="/' , 'src="'.$url_beginning , $content_ready_to_use ); 
   		     	
-  		     	$content_ready_to_use =  str_ireplace( "href='/", "src='".$url_beginning , $content_ready_to_use);
-  		     	$content_ready_to_use =  str_ireplace( 'href="/', 'src="'.$url_beginning , $content_ready_to_use);
+  		     	$content_ready_to_use =  str_ireplace( "href='/", "href='".$url_beginning , $content_ready_to_use);
+  		     	$content_ready_to_use =  str_ireplace( 'href="/', 'href="'.$url_beginning , $content_ready_to_use);
+  		     	
+  		     	// need to deal with anchor-type urls, such as <a href="#sectionb">
+  		     	$content_ready_to_use =  str_ireplace( "href='#", "href='".$full_url."#" , $content_ready_to_use);
+  		     	$content_ready_to_use =  str_ireplace( 'href="#', 'href="'.$full_url."#" , $content_ready_to_use);
+  		     	
   		     	
   		     	 
   		 
-  		     	$full_url =  $url_beginning.$url_alias; 		     	
+  		     			     	
 
-  		     	$tmp_content_html = $tmp_content_html."<br><br><b><a href='$full_url'>$content_title</a></b><br>".$content_ready_to_use.
-                         "<br><a href='$full_url'>".$read_more_label."</a>"; 
+  		     	$tmp_content_html = $tmp_content_html."<br><div><b><a href='$full_url'>$content_title</a></b><br>".$content_ready_to_use.
+                         "<br><a href='$full_url'>".$read_more_label."</a></div>"; 
   		     		 
   		     }
   		     $dao->free(); 
