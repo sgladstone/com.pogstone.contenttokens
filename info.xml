@@ -13,6 +13,7 @@
   <develStage>beta</develStage>
   <compatibility>
     <ver>4.4</ver>
+    <ver>4.5</ver>
   </compatibility>
   <comments>This extension checks if its running under Drupal before attempting to do Drupal-specific things. It has been tested with Drupal 6 and 7. Its safe to install under Joomla, WordPress, and stand-alone. However no useful functionality is provided for WordPress, Joomla or stand-alone. </comments>
   <civix>
