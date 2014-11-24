@@ -7,7 +7,7 @@ This extension provides additional mail merge tokens for CiviCRM. These can be u
 - Content of type 'blog' changed in the last 4 weeks
 - Content of type 'feed item' changed in the last 3 months
 
-These tokens can be a time-saver when preparing an email newsletter.  If used in combination with the Drupal Aggregator module, then CiviCRM can be used to send email blasts basted on virtually any content source. 
+These tokens can be a time-saver when preparing email newsletters.  If used in combination with the core Drupal Aggregator module, then CiviCRM can be used to send email blasts basted on virtually any content source. 
 
 The content types listed are determined based on content types in your database associated with at least 1 published node
 
