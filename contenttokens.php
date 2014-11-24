@@ -45,6 +45,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
            
   
   	 while( $cur_token_raw = current( $tokens['content'] )){
+  	 
+  	       $config = CRM_Core_Config::singleton();
                  $drupal_version =  contenttokens_getDrupalVersion();
   	      
   	       $website_host_name = $_SERVER['SERVER_NAME']; 
@@ -93,18 +95,19 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	            $date_unit = $date_array[0];
 	            $date_number = $date_array[1];
 	            
-	              $drupal_db = contenttokens_getUserFrameworkDatabaseName(); 
+	             
 	            
 	            $tmp_content_html = ""; 
 	            if( is_numeric( $date_number) && ( $date_unit == 'day'  || $date_unit == 'week' || $date_unit == 'month'  )){ 
 	            // get content data 
-	         
+	              if ($config->userSystem->is_drupal){
+	                 $drupal_db = contenttokens_getUserFrameworkDatabaseName(); 
 	              
 	              if( $drupal_version  == "6"){
 	              	$revision_tb = "$drupal_db.node_revisions"; 
 	              	$source  = "src";
 	              	$alias = "dst"; 
-	              	 $sql = "SELECT t1.nid, t1.url_alias, rv.title, rv.teaser  , t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+	              	 $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
 				FROM 
 				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias
 				 FROM $revision_tb nr join $drupal_db.node n ON n.nid = nr.nid
@@ -120,7 +123,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	                $revision_tb = "$drupal_db.node_revision"; 
 	              	$source  = "source";
 	              	$alias = "alias"; 
-                          $sql = "SELECT t1.nid, t1.url_alias, rv.title,  t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+                          $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title ,  t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
 				FROM 
 				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias
 				 FROM $revision_tb nr join $drupal_db.node n ON n.nid = nr.nid
@@ -134,11 +137,27 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	              }
 	           
 	           
+	           }else if($config->userSystem->is_wordpress ){
+                           $sql = "SELECT p.ID as nid, p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_modified as formatted_change_date 
+                           	FROM `wp_posts` p
+                                where p.post_type = '$cck_type'
+                                AND p.post_modified > date_sub( now() , INTERVAL $date_number $date_unit)
+                                ORDER BY p.post_modified DESC"; 
+
+
+
+                   }else if($config->userSystem->is_joomla){
+			// TODO: Figure this out for Joomla
+
+
+                  }
+	           
 	          //  print "<br>SQL: ".$sql;	        
 		   
-		       $tmp_content_html = ""; 
-		          $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
-		          $read_more_label = ts('Read More'); 
+		       
+		     $tmp_content_html = ""; 
+		     $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+		     $read_more_label = ts('Read More'); 
 		          
   		     while($dao->fetch()){
   		     	$nid = $dao->nid;
@@ -148,7 +167,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	$formatted_change_date = $dao->formatted_change_date;
   		     	
   		     	  
-  		     	  
+  		     	  if ($config->userSystem->is_drupal){
+  		     	   
   		     	  if( $drupal_version  == "7" ){
   		     	  	// $content_teaser = render(node_view(node_load($nid), 'teaser'));
   		     	  	
@@ -157,6 +177,13 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	  
   		     	  }else if( $drupal_version  == "6"){
   		     	  	$content_teaser = $dao->teaser; 
+  		     	  }
+  		     	  }else if($config->userSystem->is_wordpress ){
+  		     	  
+  		     	  	$content_teaser = $dao->teaser; 
+  		     	  
+  		     	  }else if($config->userSystem->is_joomla ){
+  		     	  
   		     	  }
   		     	 
   		     
@@ -193,7 +220,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
        $types = array(); 
 
   	$config = CRM_Core_Config::singleton();
-	
+        // print "<br><br>";
+	// print_r( $config) ; 
 	if ($config->userSystem->is_drupal){
 	
     // get all CCK content types that are used by published content
@@ -210,7 +238,21 @@ function contenttokens_civicrm_tokens( &$tokens ){
      $dao->free(); 
     // print "<br>$sql"; 
     
-    }
+    }else if( $config->userSystem->is_wordpress){
+         $sql = "SELECT post_type as type FROM `wp_posts` WHERE 1 group by post_type"; 
+         $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+     while($dao->fetch()){
+     	$types[] = $dao->type; 
+     }
+
+     $dao->free(); 
+
+
+    }else if( $config->userSystem->is_joomla ){
+       // TODO: Figure out how to get this info from Joomla.
+
+
+     } 
      return $types; 
   
   

@@ -11,8 +11,8 @@ These tokens can be a time-saver when preparing email newsletters.  If used in c
 
 The content types listed are determined based on content types in your database associated with at least 1 published node
 
-This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal 6 or 7.
+This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal or WordPress.
 
-This extension has been tested with Drupal 6 and Drupal 7. 
+This extension has been tested with Drupal 6 and Drupal 7. Limited testing has been done with WordPress.
 
-Installation Note: If your Drupal tables are in a different database than your CiviCRM tables then you will need to verify that the CiviCRM database user has permission to query tables in the Drupal database.
+Installation Note: If your CMS tables are in a different database than your CiviCRM tables then you will need to verify that the CiviCRM database user has permission to query tables in the CMS database. (If running under WordPress, WordPress tables MUST be in the same database as the CiviCRM tables.) 
