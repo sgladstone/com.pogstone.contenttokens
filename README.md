@@ -9,7 +9,7 @@ This extension provides additional mail merge tokens for CiviCRM. These can be u
 
 These tokens can be a time-saver when preparing email newsletters.  If used in combination with the core Drupal Aggregator module, then CiviCRM can be used to send email blasts basted on virtually any content source. 
 
-The content types listed are determined based on content types in your database associated with at least 1 published content item( ie a Drupal node or a WordPress post)
+The content types listed are determined based on content types in your database associated with at least 1 published content item. (ie a Drupal node or a WordPress post)
 
 This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal or WordPress.
 
