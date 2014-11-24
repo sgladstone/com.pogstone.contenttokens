@@ -1,7 +1,7 @@
 com.pogstone.contenttokens
 ==========================
 
-This extension provides additional mail merge tokens for CiviCRM. These can be used when creating an email, mass email or PDF letter. Click on the "insert token" link and you will see a series of tokens such as:
+This extension provides additional mail merge tokens for CiviCRM. These can be used when creating a single email, mass email or PDF letters. Click on the "insert token" link and you will see a series of additional tokens such as:
 
 - Content of type 'article' changed in the last 7 days
 - Content of type 'blog' changed in the last 4 weeks
