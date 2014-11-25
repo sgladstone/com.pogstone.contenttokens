@@ -34,6 +34,31 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		 $tokens['content'][$key] = $label; 
   		 
 	  	}
+
+               $categories_in_use = contenttokens_getCategoriesInUse() ; 
+               foreach(  $categories_in_use as $cid => $cur_category){
+               	    $cur_category_clean = str_replace( " ", "_",  $cur_category) ; 
+               	    $cur_category_clean = str_replace( "'", "_",  $cur_category_clean) ; 
+               	     $cur_category_clean = str_replace( ",", "_",  $cur_category_clean) ; 
+               	    
+               	    // by day
+                    $key = "content.category___".$cid."___".$cur_category_clean."___day_7" ;
+	  	$label = "Content with category '$cur_category' changed in the last 7 days"; 
+  		 $tokens['content'][$key] = $label; 
+
+		 // by week
+                    $key = "content.category___".$cid."___".$cur_category_clean."___week_4" ;
+	  	$label = "Content with category '$cur_category' changed in the last 4 weeks"; 
+  		 $tokens['content'][$key] = $label; 
+  		 
+  		  // by month
+                    $key = "content.category___".$cid."___".$cur_category_clean."___month_3" ;
+	  	$label = "Content with category '$cur_category' changed in the last 3 months"; 
+  		 $tokens['content'][$key] = $label; 
+
+
+
+              }
 	  	
 	  	
 	}
@@ -42,6 +67,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	
 		
   function contenttokens_civicrm_tokenValues( &$values, &$contactIDs, $job = null, $tokens = array(), $context = null) {
+           
            
   
   	 while( $cur_token_raw = current( $tokens['content'] )){
@@ -60,6 +86,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 		 $url_beginning = $protocol.$website_host_name."/"; 
 	 
 	        $cck_types_in_use = contenttokens_getContentTypesInUse();
+	         $categories_in_use = contenttokens_getCategoriesInUse() ; 
 	 
   	 
 	 	$tmp_key = key($tokens['content']); 
@@ -85,12 +112,24 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	 	$partial_token =  $token_as_array[0];
 	 	
 	 	
-	 	if( $partial_token == 'type'){
 	 	
-	 	    $cck_type = $token_as_array[1];
-	 	    if( in_array( $cck_type, $cck_types_in_use) ){	
-	        
-	            $token_date = $token_as_array[2];
+	 	if( $partial_token == 'type' || $partial_token == 'category' ){
+	 	
+                    if(  $partial_token == 'type' && in_array( $token_as_array[1], $cck_types_in_use) ){
+	 	       $cck_type = $token_as_array[1];
+	 	        $token_date = $token_as_array[2];
+		    }else if( $partial_token == 'category' && array_key_exists($token_as_array[1], $categories_in_use)  ){
+  			  $category_id  = $token_as_array[1];
+  			   $token_date = $token_as_array[3];
+
+			}else{
+			  // SHould skip this 
+			}
+
+   
+	 	  
+	         
+	           
 	            $date_array = explode("_", $token_date);
 	            $date_unit = $date_array[0];
 	            $date_number = $date_array[1];
@@ -100,49 +139,120 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	            $tmp_content_html = ""; 
 	            if( is_numeric( $date_number) && ( $date_unit == 'day'  || $date_unit == 'week' || $date_unit == 'month'  )){ 
 	            // get content data 
+                        $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
 	              if ($config->userSystem->is_drupal){
-	                 $drupal_db = contenttokens_getUserFrameworkDatabaseName(); 
+	                
 	              
 	              if( $drupal_version  == "6"){
-	              	$revision_tb = "$drupal_db.node_revisions"; 
+	              	$revision_tb = "$cms_db.node_revisions"; 
 	              	$source  = "src";
 	              	$alias = "dst"; 
-	              	 $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+	              	if ($partial_token == 'type'){
+	              	 	$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , 
+	              	 	t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
 				FROM 
 				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias
-				 FROM $revision_tb nr join $drupal_db.node n ON n.nid = nr.nid
-				 LEFT JOIN $drupal_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.src
+				 FROM $revision_tb nr join $cms_db.node n ON n.nid = nr.nid
+				 LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.src
 				WHERE n.status = 1 AND n.type = '$cck_type'
 				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit)
 				GROUP BY nr.nid )
 				as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
 				ORDER BY t1.changed DESC";
+			}else if($partial_token == 'category' ){
+				 
+				
+				$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , 
+				t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+				FROM 
+				(SELECT max(nr.vid) as vid,  tn.nid,  n.changed, ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias 
+				FROM $cms_db.term_node tn  
+				JOIN $cms_db.node n ON tn.nid = n.nid 
+				JOIN $revision_tb nr ON n.nid = nr.nid
+				LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.src 
+				where n.status = 1 AND tn.tid = $category_id
+				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+				group by n.nid) as t1
+				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
+				ORDER BY t1.changed DESC ";
+				
+				
+				
+				}
 	              
 	              }else{
-	                $revision_tb = "$drupal_db.node_revision"; 
+	                // Drupal7 +
+	                $revision_tb = "$cms_db.node_revision"; 
 	              	$source  = "source";
 	              	$alias = "alias"; 
+	              	if ($partial_token == 'type'){
                           $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title ,  t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
 				FROM 
 				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias
-				 FROM $revision_tb nr join $drupal_db.node n ON n.nid = nr.nid
-				 LEFT JOIN $drupal_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.source
+				 FROM $revision_tb nr join $cms_db.node n ON n.nid = nr.nid
+				 LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.source
 				WHERE n.status = 1 AND n.type = '$cck_type'
 				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit)
 				GROUP BY nr.nid )
 				as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
-				ORDER BY t1.changed DESC";	                   
+				ORDER BY t1.changed DESC";	
+			}else if($partial_token == 'category'){
+			
+			       $sql_getvocab = "SELECT vocab.machine_name FROM $cms_db.taxonomy_term_data t 
+			       			JOIN $cms_db.taxonomy_vocabulary vocab ON t.vid = vocab.vid
+			       			WHERE t.tid =  $category_id "; 
+			       	$dao_vocab =& CRM_Core_DAO::executeQuery( $sql_getvocab,   CRM_Core_DAO::$_nullArray ) ;
+			       	if( $dao_vocab->fetch()){
+			       	  $vocab_table_name = "field_data_field_".$dao_vocab->machine_name; 
+			       	  $vocab_field_name = "field_".$dao_vocab->machine_name."_tid"; 
+			       	
+			       	}
+			       	$dao_vocab->free(); 
+			       			
+				
+				$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title , 
+				t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+				FROM 
+				(SELECT tn.revision_id as vid,  tn.entity_id as nid,  n.changed, ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias 
+				FROM $cms_db.$vocab_table_name tn  
+				JOIN $cms_db.node n ON tn.entity_id = n.nid AND tn.entity_type = 'node' 
+				JOIN $revision_tb nr ON n.nid = nr.nid
+				LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.source 
+				where n.status = 1 AND tn.$vocab_field_name = $category_id
+				AND tn.entity_type = 'node'
+				AND tn.deleted <> 1
+				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+				group by n.nid) as t1
+				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
+				ORDER BY t1.changed DESC ";
+			
+			}                   
 	              }
 	           
 	           
 	           }else if($config->userSystem->is_wordpress ){
+	           	if ($partial_token == 'type'){
                            $sql = "SELECT p.ID as nid, p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_modified as formatted_change_date 
-                           	FROM `wp_posts` p
+                           	FROM $cms_db.wp_posts p
                                 where p.post_type = '$cck_type'
                                 AND p.post_modified > date_sub( now() , INTERVAL $date_number $date_unit)
+                                AND p.post_status = 'publish'
                                 ORDER BY p.post_modified DESC"; 
+                        }else if($partial_token == 'category'){
+                        
+                           $sql = "SELECT p.ID as nid,  p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_modified as formatted_change_date,
+                                t.term_name from
+				$cms_db.wp_posts p join  $cms_db.wp_term_relationships tr on p.id = tr.object_id 
+				join $cms_db.wp_terms t ON t.term_id =  tr.term_taxonomy_id 
+				WHERE t.term_id = $category_id
+				AND p.post_modified > date_sub( now() , INTERVAL $date_number $date_unit)
+				AND p.post_status = 'publish'
+                                ORDER BY p.post_modified DESC"; 
+			
+			
+			} 
 
 
 
@@ -152,7 +262,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
                   }
 	           
-	          //  print "<br>SQL: ".$sql;	        
+	        //    print "<br>SQL: ".$sql;	        
 		   
 		       
 		     $tmp_content_html = ""; 
@@ -219,7 +329,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	            
 	            }
                  }
-                 }
+                 
 	     next($tokens['content']);    
 	
 	      
@@ -240,11 +350,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	if ($config->userSystem->is_drupal){
 	
     // get all CCK content types that are used by published content
-      $drupal_db = contenttokens_getUserFrameworkDatabaseName(); 
+      $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
      //  $drupal_version =  contenttokens_getDrupalVersion();
 
       
-    $sql = "SELECT type FROM $drupal_db.node n where status = 1 GROUP BY type";
+    $sql = "SELECT type FROM $cms_db.node n where status = 1 GROUP BY type";
     
       $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
      while($dao->fetch()){
@@ -254,7 +364,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
     // print "<br>$sql"; 
     
     }else if( $config->userSystem->is_wordpress){
-         $sql = "SELECT post_type as type FROM `wp_posts` WHERE 1 group by post_type"; 
+         $sql = "SELECT p.post_type as type FROM $cms_db.wp_posts p WHERE p.post_status = 'publish' group by post_type"; 
          $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
      while($dao->fetch()){
      	$types[] = $dao->type; 
@@ -294,7 +404,70 @@ function contenttokens_civicrm_tokens( &$tokens ){
   
   }
   
+  function contenttokens_getCategoriesInUse(){
+      $terms = array(); 
+       $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
+
+  	$config = CRM_Core_Config::singleton();
+        // print "<br><br>";
+	// print_r( $config) ; 
+	  $drupal_version =  contenttokens_getDrupalVersion();
+	  
+	if ($config->userSystem->is_drupal){
+	
+	  if(  $drupal_version  == "6"){
+             $sql = "SELECT  t.tid as category_id, t.name as category_term_name FROM $cms_db.term_node  tn 
+             JOIN  $cms_db.term_data t ON tn.tid = t.tid
+             GROUP BY t.tid" ;
+             $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+             while($dao->fetch()){
+                $cid = $dao->category_id;
+     	        $terms[$cid] = $dao->category_term_name; 
+              }
+            $dao->free(); 
+            
+            }else if( $drupal_version  == "7"){
+            	 $sql = "SELECT  t.tid as category_id, t.name as category_term_name FROM $cms_db.taxonomy_term_data t
+             GROUP BY t.tid" ;
+             $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+             while($dao->fetch()){
+                $cid = $dao->category_id;
+     	        $terms[$cid] = $dao->category_term_name; 
+              }
+            $dao->free(); 
+            
+            }
+            
+            
+            
+    
+    
+    }else if( $config->userSystem->is_wordpress){
+        $sql = "SELECT t.term_id as category_id ,  t.name as  category_term_name  from
+				$cms_db.wp_posts p join  $cms_db.wp_term_relationships tr on p.id = tr.object_id 
+				join $cms_db.wp_terms t ON t.term_id = tr.term_taxonomy_id 
+				p.post_status = 'publish'
+				GROUP BY t.term_id";
+				
+	     $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+             while($dao->fetch()){
+                $cid = $dao->category_id;
+     	        $terms[$cid] = $dao->category_term_name; 
+              }
+            $dao->free(); 
+
+
+    }else if( $config->userSystem->is_joomla ){
+       // TODO: Figure out how to get this info from Joomla.
+
+
+     } 
+ //  print "<br><br>categories:<br>";
+ //  print_r( $terms); 
+
+    return $terms; 
   
+  }
   
   function contenttokens_getUserFrameworkDatabaseName(){
   	// ['userFrameworkDSN'] => mysql://dev1_username:mypassword@localhost/dev1_main?new_link=true

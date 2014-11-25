@@ -2,14 +2,14 @@
 <extension key="com.pogstone.contenttokens" type="module">
   <file>contenttokens</file>
   <name>Content Tokens</name>
-  <description>Provide mail merge tokens that list various content, ie Drupal nodes</description>
+  <description>This extension provides mail merge tokens that list various content, ie Drupal nodes or WordPress posts. The tokens available are dynamic, based on content types and content terms/categories in the CMS. This is meant to help save time when preparing an email newsletter. If used in combination with a CMS aggregator (Such as the core Drupal aggregator module), then tokens are available for virtually any content source, local or remote. </description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Sarah Gladstone at Pogstone Inc.</author>
     <email>info@pogstone.com</email>
   </maintainer>
-  <releaseDate>2014-11-24</releaseDate>
-  <version>2.1</version>
+  <releaseDate>2014-11-25</releaseDate>
+  <version>2.4</version>
   <develStage>beta</develStage>
   <urls>
 <url>http://pogstone.com</url>
@@ -19,7 +19,7 @@
     <ver>4.4</ver>
     <ver>4.5</ver>
   </compatibility>
-  <comments>This extension checks which CMS its running under before attempting to do CMS-specific things. It has been tested with Drupal 6 and 7. It should work under WordPress, but testing has been limited. Its safe to install under any CMS or stand-alone. However no useful functionality is provided for Joomla or stand-alone.(Please help improve on GitHub at https://github.com/sgladstone/com.pogstone.contenttokens) </comments>
+  <comments>This extension checks which CMS its running under before attempting to do CMS-specific things. It has been tested with Drupal 6 and 7. It should work under WordPress, but testing has been limited. Its safe to install under any CMS or stand-alone. However no useful functionality is provided for Joomla or stand-alone.(Please help improve this on GitHub at https://github.com/sgladstone/com.pogstone.contenttokens) </comments>
   <civix>
     <namespace>CRM/Contenttokens</namespace>
   </civix>

@@ -7,12 +7,18 @@ This extension provides additional mail merge tokens for CiviCRM. These can be u
 - Content of type 'blog' changed in the last 4 weeks
 - Content of type 'feed item' changed in the last 3 months
 
-These tokens can be a time-saver when preparing email newsletters.  If used in combination with the core Drupal Aggregator module, then CiviCRM can be used to send email blasts basted on virtually any content source. 
+- Content with category 'beaches' changed in the last 7 days
+- Content with category 'mountains' changed in the last 4 weeks
+- Content with category 'forests' changed in the last 3 months
 
-The content types listed are determined based on content types in your database associated with at least 1 published content item. (ie a Drupal node or a WordPress post)
+These tokens can be a time-saver when preparing email newsletters.  If used in combination with a CMS aggregator (such as the core Drupal Aggregator module) then CiviCRM can be used to send email blasts basted on virtually any content source, local or external. 
+
+The content types listed are determined based on content types in your database associated with at least 1 published content item.
+
+The categories listed are determined based on category terms in your database associated with at least 1 published content item. (ie Drupal taxonomy terms or WorPress terms)
 
 This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal or WordPress.
 
-This extension has been tested with Drupal 6 and Drupal 7. Limited testing has been done with WordPress.
+This extension has been tested with Drupal 6 and Drupal 7. Limited testing has been done with WordPress. If you search the source code for "Joomla" then you will see what you need to change to get this working for the Joomla CMS. (Be sure to submit your code changes on GitHub at: https://github.com/sgladstone/com.pogstone.contenttokens ) 
 
-Installation Note: If your CMS tables are in a different database than your CiviCRM tables then you will need to verify that the CiviCRM database user has permission to query tables in the CMS database. (If running under WordPress, WordPress tables MUST be in the same database as the CiviCRM tables.) 
+Installation Note: If your CMS tables are in a different database than your CiviCRM tables then you will need to verify that the CiviCRM database user has permission to query tables in the CMS database.
