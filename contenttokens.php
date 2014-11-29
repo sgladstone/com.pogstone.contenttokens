@@ -11,60 +11,80 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	foreach( $types_in_use as $cur_type){
 	/*
 		$tokens['content'] = array(
-	  	'content.type___story___day_7' =>   'Content: Stories changed in the last 7 days',
-	  	'content.type___story___day_14' =>  'Content: Stories changed in the last 14 days',
-	  	'content.type___story___day_30' =>  'Content: Stories changed in the last 30 days', 
-	  	'content.type___story___week_3' =>  'Content: Stories changed in the last 3 weeks', 
-	  	'content.type___story___month_3' => 'Content: Stories changed in the last 3 months',  
+	  	'content.type___story___day_7' =>   'Content: Stories created in the last 7 days',
+	  	'content.type___story___day_14' =>  'Content: Stories created in the last 14 days',
+	  	'content.type___story___day_30' =>  'Content: Stories created in the last 30 days', 
+	  	'content.type___story___week_3' =>  'Content: Stories created in the last 3 weeks', 
+	  	'content.type___story___month_3' => 'Content: Stories created in the last 3 months',  
 	  	);
 	  	*/
 	  	// by day
 	  	$key = "content.type___".$cur_type."___day_7" ;
-	  	$label = "Content of type '$cur_type' changed in the last 7 days"; 
+	  	$label = "Content of type '$cur_type' created in the last 7 days"; 
   		 $tokens['content'][$key] = $label; 
   		 
   		 // by week
   		 $key = "content.type___".$cur_type."___week_4" ;
-	  	$label = "Content of type '$cur_type' changed in the last 4 weeks"; 
+	  	$label = "Content of type '$cur_type' created in the last 4 weeks"; 
   		 $tokens['content'][$key] = $label; 
   		 
   		 // by month
   		 $key = "content.type___".$cur_type."___month_3" ;
-	  	$label = "Content of type '$cur_type' changed in the last 3 months"; 
+	  	$label = "Content of type '$cur_type' created in the last 3 months"; 
   		 $tokens['content'][$key] = $label; 
   		 
 	  	}
 
                $categories_in_use = contenttokens_getCategoriesInUse() ; 
                foreach(  $categories_in_use as $cid => $cur_category){
-               	    $cur_category_clean = str_replace( " ", "_",  $cur_category) ; 
-               	    $cur_category_clean = str_replace( "'", "_",  $cur_category_clean) ; 
-               	     $cur_category_clean = str_replace( ",", "_",  $cur_category_clean) ; 
-               	    
+               	    $cur_category_clean =  contenttoken_clean_string_for_token( $cur_category); 
+               	   // print "<Br><br>$cur_category_clean"; 
                	    // by day
                     $key = "content.category___".$cid."___".$cur_category_clean."___day_7" ;
-	  	$label = "Content with category '$cur_category' changed in the last 7 days"; 
+	  	$label = "Content with category '$cur_category' created in the last 7 days"; 
   		 $tokens['content'][$key] = $label; 
 
 		 // by week
                     $key = "content.category___".$cid."___".$cur_category_clean."___week_4" ;
-	  	$label = "Content with category '$cur_category' changed in the last 4 weeks"; 
+	  	$label = "Content with category '$cur_category' created in the last 4 weeks"; 
   		 $tokens['content'][$key] = $label; 
   		 
   		  // by month
                     $key = "content.category___".$cid."___".$cur_category_clean."___month_3" ;
-	  	$label = "Content with category '$cur_category' changed in the last 3 months"; 
+	  	$label = "Content with category '$cur_category' created in the last 3 months"; 
   		 $tokens['content'][$key] = $label; 
 
 
 
               }
 	  	
+	     $feeds_in_use  = contenttokens_getFeedsInUse();
+	     foreach( $feeds_in_use as $fid => $cur_feed){
+	     
+	          $cur_feed_clean = contenttoken_clean_string_for_token( $cur_feed); 
+	          $key = "content.feed___".$fid."___".$cur_feed_clean."___month_3";
+	          
+	          $label = "Content from feed '$cur_feed' created in the last 3 months"; 
+  		 $tokens['content'][$key] = $label; 
+
+	          
+	     
+	     
+	     }
+	     	
 	  	
 	}
 	
 	
-	
+  function contenttoken_clean_string_for_token( $param){
+  
+       $tmp_clean = str_replace( " ", "_",  $param) ; 
+       $tmp_clean = str_replace( "'", "_",  $tmp_clean) ; 
+       $tmp_clean = str_replace( ",", "_",  $tmp_clean) ; 
+        $tmp_clean = str_replace( "-", "_",  $tmp_clean) ; 
+  
+  	return $tmp_clean;
+  }	
 		
   function contenttokens_civicrm_tokenValues( &$values, &$contactIDs, $job = null, $tokens = array(), $context = null) {
            
@@ -113,7 +133,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	 	
 	 	
 	 	
-	 	if( $partial_token == 'type' || $partial_token == 'category' ){
+	 	if( $partial_token == 'type' || $partial_token == 'category' || $partial_token == 'feed'){
 	 	
                     if(  $partial_token == 'type' && in_array( $token_as_array[1], $cck_types_in_use) ){
 	 	       $cck_type = $token_as_array[1];
@@ -122,7 +142,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
   			  $category_id  = $token_as_array[1];
   			   $token_date = $token_as_array[3];
 
-			}else{
+		    }else if( $partial_token == 'feed'){
+		    	$feed_id  = $token_as_array[1];
+  			   $token_date = $token_as_array[3];
+  			   
+		    }else{
 			  // SHould skip this 
 			}
 
@@ -149,37 +173,45 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	              	$alias = "dst"; 
 	              	if ($partial_token == 'type'){
 	              	 	$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , 
-	              	 	t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+	              	 	t1.created, DATE( FROM_UNIXTIME(t1.created )) as formatted_create_date
 				FROM 
-				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias
+				(SELECT max(nr.vid) as vid, nr.nid, n.created,   ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias
 				 FROM $revision_tb nr join $cms_db.node n ON n.nid = nr.nid
 				 LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.src
 				WHERE n.status = 1 AND n.type = '$cck_type'
-				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit)
+				AND DATE( FROM_UNIXTIME(n.created )) > date_sub( now() , INTERVAL $date_number $date_unit)
 				GROUP BY nr.nid )
 				as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
-				ORDER BY t1.changed DESC";
+				ORDER BY t1.created DESC";
 			}else if($partial_token == 'category' ){
 				 
 				
 				$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title, rv.teaser  , 
-				t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+				t1.created, DATE( FROM_UNIXTIME(t1.created )) as formatted_create_date
 				FROM 
-				(SELECT max(nr.vid) as vid,  tn.nid,  n.changed, ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias 
+				(SELECT max(nr.vid) as vid,  tn.nid,  n.created, ifnull(alias.dst, concat( 'node/' , n.nid) ) as url_alias 
 				FROM $cms_db.term_node tn  
 				JOIN $cms_db.node n ON tn.nid = n.nid 
 				JOIN $revision_tb nr ON n.nid = nr.nid
 				LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.src 
 				where n.status = 1 AND tn.tid = $category_id
-				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+				AND DATE( FROM_UNIXTIME(n.created )) > date_sub( now() , INTERVAL $date_number $date_unit) 
 				group by n.nid) as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
-				ORDER BY t1.changed DESC ";
-				
-				
-				
-				}
+				ORDER BY t1.created DESC ";	
+			}else if( $partial_token == 'feed'){
+			
+			
+			//  substring( description, 1, 250) as teasertest
+			   $sql = "SELECT title as title, link as full_url, DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
+			           FROM $cms_db.aggregator_item where fid = $feed_id 
+			           AND DATE( FROM_UNIXTIME( timestamp )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+			           ORDER BY timestamp DESC ";
+			
+			
+			
+			}
 	              
 	              }else{
 	                // Drupal7 +
@@ -187,17 +219,17 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	              	$source  = "source";
 	              	$alias = "alias"; 
 	              	if ($partial_token == 'type'){
-                          $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title ,  t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+                          $sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title ,  t1.created, DATE( FROM_UNIXTIME(t1.created )) as formatted_create_date
 				FROM 
-				(SELECT max(nr.vid) as vid, nr.nid, n.changed,   ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias
+				(SELECT max(nr.vid) as vid, nr.nid, n.created,   ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias
 				 FROM $revision_tb nr join $cms_db.node n ON n.nid = nr.nid
 				 LEFT JOIN $cms_db.url_alias alias ON CONCAT('node/' , n.nid ) = alias.source
 				WHERE n.status = 1 AND n.type = '$cck_type'
-				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit)
+				AND DATE( FROM_UNIXTIME(n.created )) > date_sub( now() , INTERVAL $date_number $date_unit)
 				GROUP BY nr.nid )
 				as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
-				ORDER BY t1.changed DESC";	
+				ORDER BY t1.created DESC";	
 			}else if($partial_token == 'category'){
 			
 			       $sql_getvocab = "SELECT vocab.machine_name FROM $cms_db.taxonomy_term_data t 
@@ -213,9 +245,9 @@ function contenttokens_civicrm_tokens( &$tokens ){
 			       			
 				
 				$sql = "SELECT t1.nid as nid, t1.url_alias, rv.title as title , 
-				t1.changed, DATE( FROM_UNIXTIME(t1.changed )) as formatted_change_date
+				t1.created , DATE( FROM_UNIXTIME(t1.created )) as formatted_create_date
 				FROM 
-				(SELECT tn.revision_id as vid,  tn.entity_id as nid,  n.changed, ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias 
+				(SELECT tn.revision_id as vid,  tn.entity_id as nid,  n.created, ifnull(alias.alias, concat( 'node/' , n.nid) ) as url_alias 
 				FROM $cms_db.$vocab_table_name tn  
 				JOIN $cms_db.node n ON tn.entity_id = n.nid AND tn.entity_type = 'node' 
 				JOIN $revision_tb nr ON n.nid = nr.nid
@@ -223,10 +255,19 @@ function contenttokens_civicrm_tokens( &$tokens ){
 				where n.status = 1 AND tn.$vocab_field_name = $category_id
 				AND tn.entity_type = 'node'
 				AND tn.deleted <> 1
-				AND DATE( FROM_UNIXTIME(n.changed )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+				AND DATE( FROM_UNIXTIME(n.created )) > date_sub( now() , INTERVAL $date_number $date_unit) 
 				group by n.nid) as t1
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
-				ORDER BY t1.changed DESC ";
+				ORDER BY t1.created DESC ";
+			
+			}else if($partial_token == 'feed' ){
+			
+			    // substring( description, 1, 250) as teasertest
+				 $sql = "SELECT title as title, link as full_url , DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
+			           FROM $cms_db.aggregator_item where fid = $feed_id 
+			           AND DATE( FROM_UNIXTIME( timestamp )) > date_sub( now() , INTERVAL $date_number $date_unit) 
+			            ORDER BY timestamp DESC  ";
+			
 			
 			}                   
 	              }
@@ -234,22 +275,22 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	           
 	           }else if($config->userSystem->is_wordpress ){
 	           	if ($partial_token == 'type'){
-                           $sql = "SELECT p.ID as nid, p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_modified as formatted_change_date 
+                           $sql = "SELECT p.ID as nid, p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_date as formatted_create_date 
                            	FROM $cms_db.wp_posts p
                                 where p.post_type = '$cck_type'
-                                AND p.post_modified > date_sub( now() , INTERVAL $date_number $date_unit)
+                                AND p.post_date > date_sub( now() , INTERVAL $date_number $date_unit)
                                 AND p.post_status = 'publish'
-                                ORDER BY p.post_modified DESC"; 
+                                ORDER BY p.post_date DESC"; 
                         }else if($partial_token == 'category'){
                         
-                           $sql = "SELECT p.ID as nid,  p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_modified as formatted_change_date,
+                           $sql = "SELECT p.ID as nid,  p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_date as formatted_create_date,
                                 t.term_name from
 				$cms_db.wp_posts p join  $cms_db.wp_term_relationships tr on p.id = tr.object_id 
 				join $cms_db.wp_terms t ON t.term_id =  tr.term_taxonomy_id 
 				WHERE t.term_id = $category_id
-				AND p.post_modified > date_sub( now() , INTERVAL $date_number $date_unit)
+				AND p.post_date > date_sub( now() , INTERVAL $date_number $date_unit)
 				AND p.post_status = 'publish'
-                                ORDER BY p.post_modified DESC"; 
+                                ORDER BY p.post_date DESC"; 
 			
 			
 			} 
@@ -273,13 +314,14 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	$nid = $dao->nid;
   		     	$content_title = $dao->title;
   		     	
+  		     	
   		     	$url_alias = $dao->url_alias; 
-  		     	$formatted_change_date = $dao->formatted_change_date;
+  		     	$formatted_create_date = $dao->formatted_create_date;
   		     	
   		     	  
   		     	  if ($config->userSystem->is_drupal){
   		     	   
-  		     	  if( $drupal_version  == "7" ){
+  		     	  if( $drupal_version  == "7" && $partial_token <> 'feed' ){
   		     	  	// $content_teaser = render(node_view(node_load($nid), 'teaser'));
   		     	  	
   		     	  	$node = node_view(node_load($nid),'teaser');
@@ -295,10 +337,13 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	  }else if($config->userSystem->is_joomla ){
   		     	  
   		     	  }
-  		     	  
-  		     	  $full_url =  $url_beginning.$url_alias; 
+  		     	  if( $partial_token == 'feed'){
+  		     	  	$full_url = $dao->full_url; 
+  		     	  }else{
+  		     	  	$full_url =  $url_beginning.$url_alias; 
+  		     	  }
   		     	 
-  		     	 // Change any relative paths to absolute paths. 
+  		     	 // Convert any relative paths to absolute paths. 
   		     	$content_ready_to_use =  str_ireplace( "src='/" , "src='".$url_beginning , $content_teaser ); 
   		     	$content_ready_to_use =  str_ireplace( 'src="/' , 'src="'.$url_beginning , $content_ready_to_use ); 
   		     	
@@ -308,10 +353,6 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	// need to deal with anchor-type urls, such as <a href="#sectionb">
   		     	$content_ready_to_use =  str_ireplace( "href='#", "href='".$full_url."#" , $content_ready_to_use);
   		     	$content_ready_to_use =  str_ireplace( 'href="#', 'href="'.$full_url."#" , $content_ready_to_use);
-  		     	
-  		     	
-  		     	 
-  		 
   		     			     	
 
   		     	$tmp_content_html = $tmp_content_html."<br><div><b><a href='$full_url'>$content_title</a></b><br>".$content_ready_to_use.
@@ -339,6 +380,54 @@ function contenttokens_civicrm_tokens( &$tokens ){
   
   
   }
+  
+  
+  
+  
+  
+  
+  
+  function contenttokens_getFeedsInUse(){
+  
+        $feeds_in_use = array(); 
+
+  	$config = CRM_Core_Config::singleton();
+        // print "<br><br>";
+	// print_r( $config) ; 
+	if ($config->userSystem->is_drupal){
+	
+    // get all feeds that are used 
+      $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
+     //  $drupal_version =  contenttokens_getDrupalVersion();
+
+      
+    $sql = "SELECT fid as feed_id, title as feed_title FROM $cms_db.aggregator_feed";
+    
+      $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+     while($dao->fetch()){
+     	$feeds_in_use[$dao->feed_id] = $dao->feed_title; 
+     }
+     $dao->free(); 
+    // print "<br>$sql"; 
+    
+    }else if( $config->userSystem->is_wordpress){
+        // TODO: Figure out how to get this info from WordPress
+
+
+    }else if( $config->userSystem->is_joomla ){
+       // TODO: Figure out how to get this info from Joomla.
+
+
+     } 
+     return $feeds_in_use;
+  
+  
+  
+  
+  }
+  
+  
+  
   
   function contenttokens_getContentTypesInUse(){
   
@@ -416,9 +505,12 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	if ($config->userSystem->is_drupal){
 	
 	  if(  $drupal_version  == "6"){
-             $sql = "SELECT  t.tid as category_id, t.name as category_term_name FROM $cms_db.term_node  tn 
+             $sql = "SELECT  t.tid as category_id,  concat( v.name , '-', t.name)  as category_term_name 
+             FROM $cms_db.term_node  tn 
              JOIN  $cms_db.term_data t ON tn.tid = t.tid
+             JOIN $cms_db.vocabulary v ON v.vid = t.vid
              GROUP BY t.tid" ;
+         //    print "<br><br>$sql";
              $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
              while($dao->fetch()){
                 $cid = $dao->category_id;
@@ -427,7 +519,9 @@ function contenttokens_civicrm_tokens( &$tokens ){
             $dao->free(); 
             
             }else if( $drupal_version  == "7"){
-            	 $sql = "SELECT  t.tid as category_id, t.name as category_term_name FROM $cms_db.taxonomy_term_data t
+            	 $sql = "SELECT  t.tid as category_id, concat( v.name , '-', t.name)  as category_term_name 
+            	 FROM $cms_db.taxonomy_term_data t
+            	 JOIN $cms_db.taxonomy_vocabulary v ON t.vid = v.vid
              GROUP BY t.tid" ;
              $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
              while($dao->fetch()){
@@ -462,8 +556,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
 
      } 
- //  print "<br><br>categories:<br>";
- //  print_r( $terms); 
+  // print "<br><br>categories:<br>";
+  // print_r( $terms); 
 
     return $terms; 
   

@@ -3,19 +3,25 @@ com.pogstone.contenttokens
 
 This extension provides additional mail merge tokens for CiviCRM. These can be used when creating a single email, mass email or PDF letters. Click on the "insert token" link and you will see a series of additional tokens such as:
 
-- Content of type 'article' changed in the last 7 days
-- Content of type 'blog' changed in the last 4 weeks
-- Content of type 'feed item' changed in the last 3 months
+- Content of type 'article' created in the last 7 days
+- Content of type 'blog' created in the last 4 weeks
+- Content of type 'feed item' created in the last 3 months
 
-- Content with category 'beaches' changed in the last 7 days
-- Content with category 'mountains' changed in the last 4 weeks
-- Content with category 'forests' changed in the last 3 months
+- Content with category 'beaches' created in the last 7 days
+- Content with category 'mountains' created in the last 4 weeks
+- Content with category 'forests' created in the last 3 months
+
+- Content from feed 'Interesting blog' created in the last 7 days
+- Content from feed 'Interesting blog' created in the last 4 weeks
+- Content from feed 'Interesting blog' created in the last 3 months
 
 These tokens can be a time-saver when preparing email newsletters.  If used in combination with a CMS aggregator (such as the core Drupal Aggregator module) then CiviCRM can be used to send email blasts basted on virtually any content source, local or external. 
 
 The content types listed are determined based on content types in your database associated with at least 1 published content item.
 
-The categories listed are determined based on category terms in your database associated with at least 1 published content item. (ie Drupal taxonomy terms or WorPress terms)
+The categories listed are determined based on category terms in your database associated with at least 1 published content item. (ie Drupal taxonomy terms or WordPress terms)
+
+The feeds listed are determined based on feeds configured within the core Drupal Aggregator module. (Hopefully some WordPress or Joomla folks to help feeds working for their CMS)
 
 This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal or WordPress.
 
