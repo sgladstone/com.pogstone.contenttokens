@@ -21,7 +21,7 @@ The content types listed are determined based on content types in your database 
 
 The categories listed are determined based on category terms in your database associated with at least 1 published content item. (ie Drupal taxonomy terms or WordPress terms)
 
-The feeds listed are determined based on feeds configured within the core Drupal Aggregator module. (Hopefully some WordPress or Joomla folks to help feeds working for their CMS)
+The feeds listed are determined based on feeds configured within the core Drupal Aggregator module. (Hopefully some WordPress or Joomla folks will help to get feeds working for their CMS)
 
 This extension can be safely installed in CiviCRM under any CMS. However it will only add content tokens if running under Drupal or WordPress.
 

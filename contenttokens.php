@@ -201,13 +201,14 @@ function contenttokens_civicrm_tokens( &$tokens ){
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
 				ORDER BY t1.created DESC ";	
 			}else if( $partial_token == 'feed'){
-			
+			   if( module_exists( "aggregator")){ 
 			
 			//  substring( description, 1, 250) as teasertest
 			   $sql = "SELECT title as title, link as full_url, DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
 			           FROM $cms_db.aggregator_item where fid = $feed_id 
 			           AND DATE( FROM_UNIXTIME( timestamp )) > date_sub( now() , INTERVAL $date_number $date_unit) 
 			           ORDER BY timestamp DESC ";
+                            }
 			
 			
 			
@@ -261,12 +262,13 @@ function contenttokens_civicrm_tokens( &$tokens ){
 				ORDER BY t1.created DESC ";
 			
 			}else if($partial_token == 'feed' ){
-			
+			  if( module_exists( "aggregator")){ 
 			    // substring( description, 1, 250) as teasertest
 				 $sql = "SELECT title as title, link as full_url , DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
 			           FROM $cms_db.aggregator_item where fid = $feed_id 
 			           AND DATE( FROM_UNIXTIME( timestamp )) > date_sub( now() , INTERVAL $date_number $date_unit) 
 			            ORDER BY timestamp DESC  ";
+                           }
 			
 			
 			}                   
@@ -307,6 +309,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
 		   
 		       
 		     $tmp_content_html = ""; 
+
+                     if( strlen( $sql) > 0 ){
 		     $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
 		     $read_more_label = ts('Read More'); 
 		          
@@ -360,7 +364,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     		 
   		     }
   		     $dao->free(); 
-
+                     }
 
 		     foreach ( $contactIDs as $cid ) {
 		    // Populate the token value for this contact. 
@@ -390,25 +394,24 @@ function contenttokens_civicrm_tokens( &$tokens ){
   function contenttokens_getFeedsInUse(){
   
         $feeds_in_use = array(); 
+        $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
 
   	$config = CRM_Core_Config::singleton();
         // print "<br><br>";
 	// print_r( $config) ; 
 	if ($config->userSystem->is_drupal){
+	  if( module_exists( "aggregator")){ 
 	
-    // get all feeds that are used 
-      $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
-     //  $drupal_version =  contenttokens_getDrupalVersion();
-
-      
-    $sql = "SELECT fid as feed_id, title as feed_title FROM $cms_db.aggregator_feed";
-    
-      $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
-     while($dao->fetch()){
-     	$feeds_in_use[$dao->feed_id] = $dao->feed_title; 
-     }
-     $dao->free(); 
+		    // get all aggregator feeds that are used 
+		    $sql = "SELECT fid as feed_id, title as feed_title FROM $cms_db.aggregator_feed";
+		    
+		      $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+		     while($dao->fetch()){
+		     	$feeds_in_use[$dao->feed_id] = $dao->feed_title; 
+		     }
+		     $dao->free(); 
     // print "<br>$sql"; 
+    	   }
     
     }else if( $config->userSystem->is_wordpress){
         // TODO: Figure out how to get this info from WordPress
