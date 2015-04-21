@@ -72,6 +72,12 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	     
 	     }
 	     	
+             // Add featured items for Joomla
+             
+                $key = "content.featured";	          
+	        $label = "Content from featured items"; 
+  		$tokens['content'][$key] = $label; 
+             
 	  	
 	}
 	
@@ -133,7 +139,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	 	
 	 	
 	 	
-	 	if( $partial_token == 'type' || $partial_token == 'category' || $partial_token == 'feed'){
+	 	if( $partial_token == 'type' || $partial_token == 'category' || $partial_token == 'feed' || $partial_token == 'featured'){
 	 	
                     if(  $partial_token == 'type' && in_array( $token_as_array[1], $cck_types_in_use) ){
 	 	       $cck_type = $token_as_array[1];
@@ -161,7 +167,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	             
 	            
 	            $tmp_content_html = ""; 
-	            if( is_numeric( $date_number) && ( $date_unit == 'day'  || $date_unit == 'week' || $date_unit == 'month'  )){ 
+                    //featured items are not date specific so we domnt need the extra token potions
+	            if( is_numeric( $date_number) && ( $date_unit == 'day'  || $date_unit == 'week' || $date_unit == 'month'  ) || $partial_token == 'featured'){ 
 	            // get content data 
                         $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
 	              if ($config->userFramework=="Drupal"){
@@ -306,27 +313,35 @@ function contenttokens_civicrm_tokens( &$tokens ){
 					// -1 = archived
 					// -2 = marked for deletion
 					
-			// TODO: Figure this out for Joomla
                        $cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
                        if ($partial_token == 'type'){
                            
                            $sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
-						FROM {$cms_db}.{$cms_tbl_prefix}_content c inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
-						where 
-						ca.extension= '$cck_type'
-						AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
-						AND c.state=1 
-						ORDER BY c.publish_up DESC";
+                                FROM {$cms_db}.{$cms_tbl_prefix}content c inner join {$cms_db}.{$cms_tbl_prefix}categories ca on c.catid=ca.id 
+                                where 
+                                ca.extension= '$cck_type'
+                                AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
+                                AND c.state=1 
+                                ORDER BY c.ordering";
                                                 
                        }else if($partial_token == 'category'){
                        
-						$sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
-						FROM {$cms_db}.{$cms_tbl_prefix}_content c inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
-						where 
-						ca.id= $category_id
-						AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
-						AND c.state=1 
-						ORDER BY c.publish_up DESC";
+                            $sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
+                                FROM {$cms_db}.{$cms_tbl_prefix}content c inner join {$cms_db}.{$cms_tbl_prefix}categories ca on c.catid=ca.id 
+                                where 
+                                ca.id= $category_id
+                                AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
+                                AND c.state=1 
+                                ORDER BY c.ordering";
+			
+                        }else if($partial_token == 'featured'){
+                       
+                            $sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
+                                FROM {$cms_db}.{$cms_tbl_prefix}content c inner join {$cms_db}.{$cms_tbl_prefix}categories ca on c.catid=ca.id 
+                                where 
+                                c.featured= 1
+                                AND c.state=1 
+                                ORDER BY c.ordering";
 			
                                 }
                        }
@@ -499,8 +514,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
        // TODO: Figure out how to get this info from Joomla.
         $cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
 		 $sql = "SELECT ca.extension as type 
-                                        FROM  {$cms_db}.{$cms_tbl_prefix}_content c 
-                                        inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+                                        FROM  {$cms_db}.{$cms_tbl_prefix}content c 
+                                        inner join {$cms_db}.{$cms_tbl_prefix}categories ca on c.catid=ca.id 
 					WHERE c.state = 1 
 					group by ca.extension"; 
          $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
@@ -596,8 +611,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
        // TODO: Figure out how to get this info from Joomla.
                 $cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
 		$sql = "SELECT ca.id as category_id, ca.alias as category_term_name 
-                                        FROM  {$cms_db}.{$cms_tbl_prefix}_content c 
-                                        inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+                                        FROM  {$cms_db}.{$cms_tbl_prefix}content c 
+                                        inner join {$cms_db}.{$cms_tbl_prefix}categories ca on c.catid=ca.id 
 					WHERE c.state = 1 
 					group by ca.alias"; 
                 $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
@@ -635,15 +650,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
   }
   
  function contenttokens_getJoomlaTablePrefix(){ 
-     $config = CRM_Core_Config::singleton();
-	$cms_usr_str = $config->userFrameworkUsersTableName ;
-	
-	//print_r( $config); 
-	
-	$cms_tmp = explode( '_', $cms_usr_str) ; 
-        if( strlen($cms_tmp[0]) > 0){
-		$cms_prefix = $cms_tmp[0]; 
-	}
+        $app = JFactory::getApplication();
+        $cms_prefix = $app->getCfg('dbprefix');
   	return $cms_prefix;
 	
  }	
