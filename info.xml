@@ -8,8 +8,8 @@
     <author>Sarah Gladstone at Pogstone Inc.</author>
     <email>info@pogstone.com</email>
   </maintainer>
-  <releaseDate>2014-11-25</releaseDate>
-  <version>2.7</version>
+  <releaseDate>2015-04-21</releaseDate>
+  <version>2.8</version>
   <develStage>beta</develStage>
   <urls>
 <url>http://pogstone.com</url>
@@ -19,7 +19,7 @@
     <ver>4.4</ver>
     <ver>4.5</ver>
   </compatibility>
-  <comments>This extension checks which CMS its running under before attempting to do CMS-specific things. It has been tested primarily with Drupal 6 and 7. It should work under WordPress, but testing has been limited. Its safe to install under any CMS or stand-alone. However no useful functionality is provided for Joomla or stand-alone. (Please help improve this on GitHub at https://github.com/sgladstone/com.pogstone.contenttokens). The formatting of the results is fairly simple: each item is wrapped in a DIV tag and relative URLs are converted to absolute URLs. The original formatting from the content item is not altered. </comments>
+  <comments>This extension checks which CMS its running under before attempting to do CMS-specific things. It has been tested primarily with Drupal 6 and 7 and Joomla 3. It should work under WordPress, but testing has been limited. Its safe to install under any CMS or stand-alone. However no useful functionality is provided for stand-alone. (Please help improve this on GitHub at https://github.com/sgladstone/com.pogstone.contenttokens). The formatting of the results is fairly simple: each item is wrapped in a DIV tag with a class of contenttokens and relative URLs are converted to absolute URLs. The original formatting from the content item is not altered. </comments>
   <civix>
     <namespace>CRM/Contenttokens</namespace>
   </civix>
