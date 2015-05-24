@@ -2,7 +2,7 @@
 <extension key="com.pogstone.contenttokens" type="module">
   <file>contenttokens</file>
   <name>Content Tokens</name>
-  <description>This extension provides mail merge tokens that list various content. If running under Drupal, then there are tokens for each content type, taxonomy term, and feed items. If running under WordPress then there are tokens for each post type and post term.  This is meant to help save time when preparing an email newsletter. If used in combination with a CMS aggregator (Such as the core Drupal aggregator module), then tokens are available for virtually any content source, local or remote. </description>
+  <description>This extension provides mail merge tokens that list various content. If running under Drupal, then there are tokens for each content type, taxonomy term, and feed items. If running under WordPress then there are tokens for each post type and post term. If running under Joomla then there are tokens for each type and category. This is meant to help save time when preparing an email newsletter. If used in combination with a CMS aggregator (Such as the core Drupal aggregator module), then tokens are available for virtually any content source, local or remote. </description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Sarah Gladstone</author>
