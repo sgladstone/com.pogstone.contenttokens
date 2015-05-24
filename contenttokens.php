@@ -503,12 +503,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
        $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
 
   	$config = CRM_Core_Config::singleton();
-        // print "<br><br>";
-	// print_r( $config) ; 
+        
 	  $drupal_version =  contenttokens_getDrupalVersion();
-	 
-
-   // print "<br>Sarah: user framework: ".$config->userFramework;
 
 	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
 	
