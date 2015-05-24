@@ -166,8 +166,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	            if( is_numeric( $date_number) && ( $date_unit == 'day'  || $date_unit == 'week' || $date_unit == 'month'  )){ 
 	            // get content data 
                         $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
-	              if ($config->userSystem->is_drupal){
-	                
+	            
+	              if( $config->userFramework=="Drupal" || $config->userFramework=="Drupal6" ){ 
 	              
 	              if( $drupal_version  == "6"){
 	              	$revision_tb = "$cms_db.node_revisions"; 
@@ -277,7 +277,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
 	              }
 	           
 	           
-	           }else if($config->userSystem->is_wordpress ){
+	           }else if($config->userFramework=="Wordpress" ){
+	           
 	           	if ($partial_token == 'type'){
                            $sql = "SELECT p.ID as nid, p.guid as url_alias, p.post_title as title ,p.post_content as teaser,  p.post_date as formatted_create_date 
                            	FROM $cms_db.wp_posts p
@@ -301,7 +302,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
 
 
-                   }else if($config->userSystem->is_joomla){
+                   }else if($config->userFramework=="Joomla"){
 			// TODO: Figure this out for Joomla
 
 
@@ -325,7 +326,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	$formatted_create_date = $dao->formatted_create_date;
   		     	
   		     	  
-  		     	  if ($config->userSystem->is_drupal){
+  		     	  if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
   		     	   
   		     	  if( $drupal_version  == "7" && $partial_token <> 'feed' ){
   		     	  	// $content_teaser = render(node_view(node_load($nid), 'teaser'));
@@ -336,11 +337,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	  }else if( $drupal_version  == "6"){
   		     	  	$content_teaser = $dao->teaser; 
   		     	  }
-  		     	  }else if($config->userSystem->is_wordpress ){
+  		     	  }else if($config->userFramework=="Wordpress" ){
   		     	  
   		     	  	$content_teaser = $dao->teaser; 
   		     	  
-  		     	  }else if($config->userSystem->is_joomla ){
+  		     	  }else if($config->userFramework=="Joomla" ){
   		     	  
   		     	  }
   		     	  if( $partial_token == 'feed'){
@@ -401,7 +402,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
   	$config = CRM_Core_Config::singleton();
         // print "<br><br>";
 	// print_r( $config) ; 
-	if ($config->userSystem->is_drupal){
+	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
 	  if( module_exists( "aggregator")){ 
 	
 		    // get all aggregator feeds that are used 
@@ -415,11 +416,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
     // print "<br>$sql"; 
     	   }
     
-    }else if( $config->userSystem->is_wordpress){
+    }else if( $config->userFramework=="Wordpress"){
         // TODO: Figure out how to get this info from WordPress
 
 
-    }else if( $config->userSystem->is_joomla ){
+    }else if( $config->userFramework=="Joomla" ){
        // TODO: Figure out how to get this info from Joomla.
 
 
@@ -441,12 +442,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
   	$config = CRM_Core_Config::singleton();
         // print "<br><br>";
 	// print_r( $config) ; 
-	if ($config->userSystem->is_drupal){
+	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
 	
     // get all CCK content types that are used by published content
       $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
-     //  $drupal_version =  contenttokens_getDrupalVersion();
-
+     
       
     $sql = "SELECT type FROM $cms_db.node n where status = 1 GROUP BY type";
     
@@ -457,7 +457,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
      $dao->free(); 
     // print "<br>$sql"; 
     
-    }else if( $config->userSystem->is_wordpress){
+    }else if( $config->userFramework=="Wordpress"){
          $sql = "SELECT p.post_type as type FROM $cms_db.wp_posts p WHERE p.post_status = 'publish' group by post_type"; 
          $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
      while($dao->fetch()){
@@ -467,7 +467,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
      $dao->free(); 
 
 
-    }else if( $config->userSystem->is_joomla ){
+    }else if( $config->userFramework=="Joomla" ){
        // TODO: Figure out how to get this info from Joomla.
 
 
@@ -506,8 +506,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
         // print "<br><br>";
 	// print_r( $config) ; 
 	  $drupal_version =  contenttokens_getDrupalVersion();
-	  
-	if ($config->userSystem->is_drupal){
+	 
+
+   // print "<br>Sarah: user framework: ".$config->userFramework;
+
+	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
 	
 	  if(  $drupal_version  == "6"){
              $sql = "SELECT  t.tid as category_id,  concat( v.name , '-', t.name)  as category_term_name 
@@ -541,7 +544,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
             
     
     
-    }else if( $config->userSystem->is_wordpress){
+    }else if( $config->userFramework=="Wordpress"){
         $sql = "SELECT t.term_id as category_id ,  t.name as  category_term_name  from
 				$cms_db.wp_posts p join  $cms_db.wp_term_relationships tr on p.id = tr.object_id 
 				join $cms_db.wp_terms t ON t.term_id = tr.term_taxonomy_id 
@@ -556,7 +559,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
             $dao->free(); 
 
 
-    }else if( $config->userSystem->is_joomla ){
+    }else if( $config->userFramework=="Joomla" ){
        // TODO: Figure out how to get this info from Joomla.
 
 
