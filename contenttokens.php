@@ -303,7 +303,38 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
 
                    }else if($config->userFramework=="Joomla"){
-			// TODO: Figure this out for Joomla
+			 // state values
+					// 0 = unpublished
+					// 1 = published
+					// -1 = archived
+					// -2 = marked for deletion
+					
+ 			
+ 			
+ 			$cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
+                       if ($partial_token == 'type'){
+                           
+                           $sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
+						FROM {$cms_db}.{$cms_tbl_prefix}_content c inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+						where 
+						ca.extension= '$cck_type'
+						AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
+						AND c.state=1 
+						ORDER BY c.publish_up DESC";
+                                                
+                       }else if($partial_token == 'category'){
+                       
+						$sql="SELECT c.ID as nid, c.alias as url_alias, c.title as title ,c.introtext as teaser, c.publish_up as formatted_create_date, ca.alias as term_name
+						FROM {$cms_db}.{$cms_tbl_prefix}_content c inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+						where 
+						ca.id= $category_id
+						AND c.publish_up > date_sub( now() , INTERVAL $date_number $date_unit) 
+						AND c.state=1 
+						ORDER BY c.publish_up DESC";
+			
+                                }
+
+
 
 
                   }
@@ -342,7 +373,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
   		     	  	$content_teaser = $dao->teaser; 
   		     	  
   		     	  }else if($config->userFramework=="Joomla" ){
-  		     	  
+  		     	         $content_teaser = $dao->teaser; 
   		     	  }
   		     	  if( $partial_token == 'feed'){
   		     	  	$full_url = $dao->full_url; 
@@ -440,12 +471,14 @@ function contenttokens_civicrm_tokens( &$tokens ){
        $types = array(); 
 
   	$config = CRM_Core_Config::singleton();
+  	 $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
+  	 
         // print "<br><br>";
 	// print_r( $config) ; 
 	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
 	
     // get all CCK content types that are used by published content
-      $cms_db = contenttokens_getUserFrameworkDatabaseName(); 
+     
      
       
     $sql = "SELECT type FROM $cms_db.node n where status = 1 GROUP BY type";
@@ -468,7 +501,16 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
 
     }else if( $config->userFramework=="Joomla" ){
-       // TODO: Figure out how to get this info from Joomla.
+        $cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
+		 $sql = "SELECT ca.extension as type 
+                                        FROM  {$cms_db}.{$cms_tbl_prefix}_content c 
+                                        inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+					WHERE c.state = 1 
+					group by ca.extension"; 
+         $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+     while($dao->fetch()){
+     	$types[] = $dao->type; 
+		}
 
 
      } 
@@ -556,7 +598,18 @@ function contenttokens_civicrm_tokens( &$tokens ){
 
 
     }else if( $config->userFramework=="Joomla" ){
-       // TODO: Figure out how to get this info from Joomla.
+        $cms_tbl_prefix = contenttokens_getJoomlaTablePrefix();
+		$sql = "SELECT ca.id as category_id, ca.alias as category_term_name 
+                                        FROM  {$cms_db}.{$cms_tbl_prefix}_content c 
+                                        inner join {$cms_db}.{$cms_tbl_prefix}_categories ca on c.catid=ca.id 
+					WHERE c.state = 1 
+					group by ca.alias"; 
+                $dao =& CRM_Core_DAO::executeQuery( $sql,   CRM_Core_DAO::$_nullArray ) ;
+                while($dao->fetch()){
+                    $cid = $dao->category_id;
+                    $terms[$cid] = $dao->category_term_name; 
+                }
+            $dao->free(); 
 
 
      } 
@@ -566,7 +619,19 @@ function contenttokens_civicrm_tokens( &$tokens ){
     return $terms; 
   
   }
-  
+  function contenttokens_getJoomlaTablePrefix(){ 
+     $config = CRM_Core_Config::singleton();
+	$cms_usr_str = $config->userFrameworkUsersTableName ; 
+	
+	$cms_tmp = explode( '_', $cms_usr_str) ; 
+        if( strlen($cms_tmp[0]) > 0){
+		$cms_prefix = $cms_tmp[0]; 
+	}
+  	return $cms_prefix;
+	
+ }	
+
+
   function contenttokens_getUserFrameworkDatabaseName(){
   	// ['userFrameworkDSN'] => mysql://dev1_username:mypassword@localhost/dev1_main?new_link=true
 	
