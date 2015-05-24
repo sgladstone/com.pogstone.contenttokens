@@ -82,6 +82,8 @@ function contenttokens_civicrm_tokens( &$tokens ){
        $tmp_clean = str_replace( "'", "_",  $tmp_clean) ; 
        $tmp_clean = str_replace( ",", "_",  $tmp_clean) ; 
         $tmp_clean = str_replace( "-", "_",  $tmp_clean) ; 
+         $tmp_clean = str_replace( "/", "_",  $tmp_clean) ; 
+       $tmp_clean = str_replace( "\\", "_",  $tmp_clean) ; 
   
   	return $tmp_clean;
   }	
