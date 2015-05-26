@@ -90,7 +90,11 @@ function contenttokens_civicrm_tokens( &$tokens ){
 		
   function contenttokens_civicrm_tokenValues( &$values, &$contactIDs, $job = null, $tokens = array(), $context = null) {
            
-           
+    $tmp_content_tokens =  isset($tokens['content']) ? $tokens['content'] : null;	 
+    if( is_null(  $tmp_content_tokens) ){
+
+         return; 
+    }	  
   
   	 while( $cur_token_raw = current( $tokens['content'] )){
   	 
@@ -98,7 +102,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
                  $drupal_version =  contenttokens_getDrupalVersion();
   	      
   	       $website_host_name = $_SERVER['SERVER_NAME']; 
-	        $ssl_in_use = $_SERVER['HTTPS'];
+	        $ssl_in_use =  isset($_SERVER['HTTPS'] ) ? $_SERVER['HTTPS'] : '';
 		if( strlen($ssl_in_use) > 0){
 			$protocol = "https://"; 
 		}else{
