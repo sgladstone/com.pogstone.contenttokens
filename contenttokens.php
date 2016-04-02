@@ -101,7 +101,9 @@ function contenttokens_civicrm_tokens( &$tokens ){
   	       $config = CRM_Core_Config::singleton();
                  $drupal_version =  contenttokens_getDrupalVersion();
   	      
-  	       $website_host_name = $_SERVER['SERVER_NAME']; 
+  	       $civi_url =  CRM_Utils_System::url('civicrm/example', NULL, TRUE, NULL, FALSE);
+  	 $website_host_name = parse_url( $civi_url, PHP_URL_HOST );
+  	   
 	        $ssl_in_use =  isset($_SERVER['HTTPS'] ) ? $_SERVER['HTTPS'] : '';
 		if( strlen($ssl_in_use) > 0){
 			$protocol = "https://"; 
