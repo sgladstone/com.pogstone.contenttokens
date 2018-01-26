@@ -209,7 +209,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 				LEFT JOIN $revision_tb rv ON t1.vid = rv.vid
 				ORDER BY t1.created DESC ";	
 			}else if( $partial_token == 'feed'){
-			   if( module_exists( "aggregator")){ 
+			   if(function_exists('module_exists') && module_exists( "aggregator")){
 			
 			//  substring( description, 1, 250) as teasertest
 			   $sql = "SELECT title as title, link as full_url, DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
@@ -270,7 +270,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
 				ORDER BY t1.created DESC ";
 			
 			}else if($partial_token == 'feed' ){
-			  if( module_exists( "aggregator")){ 
+			  if(function_exists('module_exists') && module_exists( "aggregator")){
 			    // substring( description, 1, 250) as teasertest
 				 $sql = "SELECT title as title, link as full_url , DATE( FROM_UNIXTIME( timestamp )) as formatted_create_date
 			           FROM $cms_db.aggregator_item where fid = $feed_id 
@@ -440,7 +440,7 @@ function contenttokens_civicrm_tokens( &$tokens ){
         // print "<br><br>";
 	// print_r( $config) ; 
 	if ($config->userFramework=="Drupal" || $config->userFramework=="Drupal6"){
-	  if( module_exists( "aggregator")){ 
+	  if(function_exists('module_exists') && module_exists( "aggregator")){
 	
 		    // get all aggregator feeds that are used 
 		    $sql = "SELECT fid as feed_id, title as feed_title FROM $cms_db.aggregator_feed";
